@@ -35,7 +35,7 @@ Evaluación Laravel – Grupo 1, Ejercicio 2.
 - PHP 8.2 o superior
 - Laravel 12
 - MySQL / MariaDB (XAMPP)
-- Bootstrap 5.3 y Bootstrap Icons (por CDN, no requiere `npm`)
+- Bootstrap 5.3 y Bootstrap Icons (incluidos en `public/vendor`, funcionan sin internet y no requieren `npm`)
 - PHPUnit para las pruebas y GitHub Actions para ejecutarlas en cada push
 
 ## Instalación

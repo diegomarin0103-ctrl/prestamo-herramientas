@@ -4,8 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Inicio') · {{ config('app.name') }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    {{-- Bootstrap 5.3.3 y Bootstrap Icons 1.11.3 incluidos en public/vendor: funcionan sin internet --}}
+    <link href="{{ asset('vendor/bootstrap/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('vendor/bootstrap-icons/bootstrap-icons.min.css') }}" rel="stylesheet">
 </head>
 <body class="bg-light">
     <nav class="navbar navbar-expand-lg navbar-dark bg-success mb-4">
@@ -27,6 +28,6 @@
         @yield('content')
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('vendor/bootstrap/bootstrap.bundle.min.js') }}"></script>
 </body>
 </html>

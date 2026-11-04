@@ -38,7 +38,7 @@
                 <tbody>
                     @forelse ($herramientas as $herramienta)
                         <tr>
-                            <td class="fw-semibold">{{ $herramienta->codigo }}</td>
+                            <td class="fw-semibold text-nowrap">{{ $herramienta->codigo }}</td>
                             <td>{{ $herramienta->nombre }}</td>
                             <td>{{ $herramienta->tipo }}</td>
                             <td>{{ $herramienta->marca }}</td>
