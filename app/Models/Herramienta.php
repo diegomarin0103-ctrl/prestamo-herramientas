@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Herramienta extends Model
 {
@@ -35,6 +36,12 @@ class Herramienta extends Model
         return [
             'cantidad_disponible' => 'integer',
         ];
+    }
+
+    /** Una herramienta puede tener muchos préstamos. */
+    public function prestamos(): HasMany
+    {
+        return $this->hasMany(Prestamo::class);
     }
 
     /** Clase de Bootstrap para pintar el estado. */

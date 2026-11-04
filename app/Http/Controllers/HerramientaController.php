@@ -2,19 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\HerramientaRequest;
 use App\Models\Herramienta;
+use App\Models\Prestamo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class HerramientaController extends Controller
 {
-    /** Consultar: lista de herramientas con búsqueda y paginación. */
+    /** Consultar: lista de herramientas con las unidades que están prestadas. */
     public function index(Request $request): View
     {
         $buscar = $request->query('buscar');
 
         $herramientas = Herramienta::query()
+            ->withSum(['prestamos as unidades_prestadas' => fn ($q) => $q->whereIn('estado', Prestamo::ESTADOS_ACTIVOS)], 'cantidad_prestada')
             ->when($buscar, function ($query, $buscar) {
                 $query->where(function ($q) use ($buscar) {
                     $q->where('codigo', 'like', "%{$buscar}%")
@@ -36,19 +39,20 @@ class HerramientaController extends Controller
     }
 
     /** Crear: guarda una herramienta nueva en MySQL. */
-    public function store(Request $request): RedirectResponse
+    public function store(HerramientaRequest $request): RedirectResponse
     {
-        $datos = $request->validate($this->reglas());
-
-        Herramienta::create($datos);
+        Herramienta::create($request->validated());
 
         return redirect()->route('herramientas.index')
             ->with('success', 'Herramienta registrada correctamente.');
     }
 
+    /** Detalle de la herramienta con su historial de préstamos. */
     public function show(Herramienta $herramienta): View
     {
-        return view('herramientas.show', compact('herramienta'));
+        $prestamos = $herramienta->prestamos()->orderByDesc('fecha_prestamo')->get();
+
+        return view('herramientas.show', compact('herramienta', 'prestamos'));
     }
 
     public function edit(Herramienta $herramienta): View
@@ -57,34 +61,30 @@ class HerramientaController extends Controller
     }
 
     /** Actualizar: modifica una herramienta existente. */
-    public function update(Request $request, Herramienta $herramienta): RedirectResponse
+    public function update(HerramientaRequest $request, Herramienta $herramienta): RedirectResponse
     {
-        $datos = $request->validate($this->reglas());
-
-        $herramienta->update($datos);
+        $herramienta->update($request->validated());
 
         return redirect()->route('herramientas.index')
             ->with('success', 'Herramienta actualizada correctamente.');
     }
 
-    /** Eliminar: borra la herramienta (la confirmación se pide en la vista). */
+    /**
+     * Eliminar: solo se permite si la herramienta no tiene préstamos
+     * (la base de datos también lo impide con la clave foránea).
+     */
     public function destroy(Herramienta $herramienta): RedirectResponse
     {
+        $total = $herramienta->prestamos()->count();
+
+        if ($total > 0) {
+            return redirect()->route('herramientas.index')
+                ->with('error', "No se puede eliminar la herramienta {$herramienta->codigo} porque tiene {$total} préstamo(s) registrado(s).");
+        }
+
         $herramienta->delete();
 
         return redirect()->route('herramientas.index')
-            ->with('success', 'Herramienta eliminada correctamente.');
-    }
-
-    private function reglas(): array
-    {
-        return [
-            'codigo' => ['required', 'string', 'max:30'],
-            'nombre' => ['required', 'string', 'max:100'],
-            'tipo' => ['required', 'string', 'max:60'],
-            'marca' => ['required', 'string', 'max:60'],
-            'cantidad_disponible' => ['required', 'integer', 'min:0'],
-            'estado' => ['required'],
-        ];
+            ->with('success', "Herramienta {$herramienta->codigo} eliminada correctamente.");
     }
 }

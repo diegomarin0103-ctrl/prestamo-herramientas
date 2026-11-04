@@ -30,6 +30,7 @@
                         <th>Tipo</th>
                         <th>Marca</th>
                         <th class="text-center">Disponibles</th>
+                        <th class="text-center">Prestadas</th>
                         <th>Estado</th>
                         <th class="text-end">Acciones</th>
                     </tr>
@@ -43,6 +44,9 @@
                             <td>{{ $herramienta->marca }}</td>
                             <td class="text-center">
                                 <span class="badge rounded-pill {{ $herramienta->cantidad_disponible > 0 ? 'text-bg-light border' : 'text-bg-danger' }}">{{ $herramienta->cantidad_disponible }}</span>
+                            </td>
+                            <td class="text-center">
+                                <a href="{{ route('prestamos.index', ['herramienta_id' => $herramienta->id]) }}" class="text-decoration-none">{{ (int) $herramienta->unidades_prestadas }}</a>
                             </td>
                             <td><span class="badge text-bg-{{ $herramienta->colorEstado() }}">{{ \App\Models\Herramienta::ESTADOS[$herramienta->estado] ?? $herramienta->estado }}</span></td>
                             <td class="text-end text-nowrap">
@@ -58,7 +62,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-4">No hay herramientas registradas.</td>
+                            <td colspan="8" class="text-center text-muted py-4">No hay herramientas registradas.</td>
                         </tr>
                     @endforelse
                 </tbody>

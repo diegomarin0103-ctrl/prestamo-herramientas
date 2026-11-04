@@ -9,12 +9,28 @@
     </div>
 
     <form method="GET" action="{{ route('prestamos.index') }}" class="row g-2 mb-3">
-        <div class="col-sm-8 col-md-6">
+        <div class="col-md-4">
             <input type="search" name="buscar" value="{{ $buscar }}" class="form-control" placeholder="Buscar por responsable">
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <select name="herramienta_id" class="form-select" aria-label="Filtrar por herramienta">
+                <option value="">Todas las herramientas</option>
+                @foreach ($herramientas as $herramienta)
+                    <option value="{{ $herramienta->id }}" @selected($herramientaId == $herramienta->id)>{{ $herramienta->nombre }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-sm-6 col-md-2">
+            <select name="estado" class="form-select" aria-label="Filtrar por estado">
+                <option value="">Todos los estados</option>
+                @foreach (\App\Models\Prestamo::ESTADOS as $valor => $texto)
+                    <option value="{{ $valor }}" @selected($estado === $valor)>{{ $texto }}</option>
+                @endforeach
+            </select>
         </div>
         <div class="col-auto">
             <button class="btn btn-outline-secondary"><i class="bi bi-search"></i> Buscar</button>
-            @if ($buscar)
+            @if ($buscar || $estado || $herramientaId)
                 <a href="{{ route('prestamos.index') }}" class="btn btn-link">Limpiar</a>
             @endif
         </div>
@@ -39,7 +55,10 @@
                     @forelse ($prestamos as $prestamo)
                         <tr>
                             <td class="text-muted">{{ $prestamo->id }}</td>
-                            <td>{{ $prestamo->herramienta_id }}</td>
+                            <td>
+                                <a href="{{ route('herramientas.show', $prestamo->herramienta) }}" class="text-decoration-none">{{ $prestamo->herramienta->nombre }}</a>
+                                <div class="small text-muted">{{ $prestamo->herramienta->codigo }}</div>
+                            </td>
                             <td>{{ $prestamo->nombre_responsable }}</td>
                             <td>{{ $prestamo->fecha_prestamo->format('d/m/Y') }}</td>
                             <td>{{ $prestamo->fecha_devolucion?->format('d/m/Y') ?? '—' }}</td>

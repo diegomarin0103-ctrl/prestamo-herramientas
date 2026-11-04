@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Prestamo extends Model
 {
@@ -17,6 +18,9 @@ class Prestamo extends Model
         'devuelto' => 'Devuelto',
         'vencido' => 'Vencido',
     ];
+
+    /** Estados en los que la herramienta sigue fuera del taller. */
+    public const ESTADOS_ACTIVOS = ['prestado', 'vencido'];
 
     protected $fillable = [
         'herramienta_id',
@@ -34,6 +38,18 @@ class Prestamo extends Model
             'fecha_devolucion' => 'date',
             'cantidad_prestada' => 'integer',
         ];
+    }
+
+    /** Cada préstamo pertenece a una herramienta. */
+    public function herramienta(): BelongsTo
+    {
+        return $this->belongsTo(Herramienta::class);
+    }
+
+    /** Indica si las unidades prestadas todavía no han regresado. */
+    public function estaActivo(): bool
+    {
+        return in_array($this->estado, self::ESTADOS_ACTIVOS, true);
     }
 
     /** Clase de Bootstrap para pintar el estado. */

@@ -15,7 +15,10 @@
         <div class="card-body">
             <dl class="row mb-0">
                 <dt class="col-sm-4">Herramienta</dt>
-                <dd class="col-sm-8">{{ $prestamo->herramienta_id }}</dd>
+                <dd class="col-sm-8">
+                    <a href="{{ route('herramientas.show', $prestamo->herramienta) }}">{{ $prestamo->herramienta->codigo }} — {{ $prestamo->herramienta->nombre }}</a>
+                    <span class="text-muted">({{ $prestamo->herramienta->marca }})</span>
+                </dd>
 
                 <dt class="col-sm-4">Responsable</dt>
                 <dd class="col-sm-8">{{ $prestamo->nombre_responsable }}</dd>

@@ -6,11 +6,14 @@
             <option value="">Seleccione una herramienta…</option>
             @foreach ($herramientas as $herramienta)
                 <option value="{{ $herramienta->id }}" @selected(old('herramienta_id', $prestamo->herramienta_id) == $herramienta->id)>
-                    {{ $herramienta->codigo }} — {{ $herramienta->nombre }} ({{ $herramienta->cantidad_disponible }} disponibles)
+                    {{ $herramienta->codigo }} — {{ $herramienta->nombre }} ({{ $herramienta->cantidad_disponible }} disponibles{{ $herramienta->estado !== 'activa' ? ', '.mb_strtolower(\App\Models\Herramienta::ESTADOS[$herramienta->estado]) : '' }})
                 </option>
             @endforeach
         </select>
         @error('herramienta_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        @if ($herramientas->isEmpty())
+            <div class="form-text text-danger">No hay herramientas. <a href="{{ route('herramientas.create') }}">Registra una herramienta</a> primero.</div>
+        @endif
     </div>
 
     <div class="col-md-4">
