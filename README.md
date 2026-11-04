@@ -1,59 +1,121 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sistema de préstamos de herramientas
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplicación web en **Laravel 12** y **MySQL** para que un taller registre sus herramientas y controle cuáles se encuentran prestadas, a quién y en qué cantidad.
 
-## About Laravel
+Evaluación Laravel – Grupo 1, Ejercicio 2.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Módulos (CRUD)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| Módulo | Campos | Operaciones |
+|---|---|---|
+| **Herramientas** | código, nombre, tipo de herramienta, marca, cantidad disponible, estado (activa, en reparación, fuera de servicio) | crear, consultar (tabla con unidades disponibles y prestadas), ver detalle con historial de préstamos, editar, eliminar con confirmación |
+| **Préstamos** | herramienta, nombre del responsable, fecha de préstamo, fecha de devolución, cantidad prestada, estado del préstamo (prestado, devuelto, vencido) | crear, consultar (tabla con búsqueda y filtros por herramienta y estado), ver detalle, editar, eliminar con confirmación |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+**Relación:** cada préstamo está asociado a una herramienta (`prestamos.herramienta_id` → `herramientas.id`, clave foránea). Una herramienta con préstamos registrados no se puede eliminar: el sistema muestra un mensaje de error y la base de datos también lo impide (`ON DELETE RESTRICT`).
 
-## Learning Laravel
+### Control de inventario
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+- Al registrar un préstamo **prestado** o **vencido**, la cantidad prestada se descuenta de la cantidad disponible de la herramienta.
+- Al cambiar el préstamo a **devuelto** o eliminarlo, las unidades regresan a la herramienta.
+- Al editar la cantidad o la herramienta de un préstamo, el inventario se ajusta automáticamente.
+- No se puede prestar más unidades de las disponibles, ni prestar una herramienta en reparación o fuera de servicio.
+- Las operaciones se hacen dentro de transacciones de base de datos: si algo falla, no queda nada a medias.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Validaciones
 
-## Laravel Sponsors
+- Los campos marcados con `*` son obligatorios.
+- El código de la herramienta no se puede repetir.
+- Cantidades: números enteros (disponible ≥ 0, prestada ≥ 1).
+- Fechas válidas; la fecha de préstamo no puede ser futura y la de devolución no puede ser anterior a la de préstamo. Es obligatoria cuando el préstamo está devuelto.
+- Estado y herramienta solo aceptan valores existentes.
+- Los mensajes de validación, éxito y error se muestran en español.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Tecnologías
 
-### Premium Partners
+- PHP 8.2 o superior
+- Laravel 12
+- MySQL / MariaDB (XAMPP)
+- Bootstrap 5.3 y Bootstrap Icons (incluidos en `public/vendor`, funcionan sin internet y no requieren `npm`)
+- PHPUnit para las pruebas y GitHub Actions para ejecutarlas en cada push
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## Instalación
 
-## Contributing
+Requisitos: PHP 8.2+, Composer, Git y MySQL (por ejemplo, XAMPP con MySQL encendido).
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/<usuario>/prestamo-herramientas.git
+cd prestamo-herramientas
 
-## Code of Conduct
+# 2. Instalar dependencias de PHP
+composer install
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# 3. Crear el archivo de entorno y la llave de la aplicación
+cp .env.example .env        # en Windows (cmd): copy .env.example .env
+php artisan key:generate
+```
 
-## Security Vulnerabilities
+4. Crear la base de datos vacía `prestamo_herramientas` en phpMyAdmin (cotejamiento `utf8mb4_unicode_ci`) o con:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```sql
+CREATE DATABASE prestamo_herramientas CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
 
-## License
+5. Revisar en `.env` los datos de conexión (los de XAMPP vienen por defecto):
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=prestamo_herramientas
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+6. Crear las tablas, cargar los datos de prueba y arrancar el servidor:
+
+```bash
+php artisan migrate --seed
+php artisan serve
+```
+
+Abrir <http://127.0.0.1:8000>.
+
+Para volver a dejar la base de datos con los datos de prueba originales: `php artisan migrate:fresh --seed`.
+
+## Datos de prueba
+
+El seeder (`database/seeders/DatabaseSeeder.php`) registra 11 herramientas (taladros, pulidoras, llaves, equipos de medición y soldadura, entre otras) y 10 préstamos en los tres estados posibles.
+
+## Pruebas
+
+```bash
+php artisan test
+```
+
+Las pruebas (`tests/Feature`) cubren las cuatro operaciones de cada CRUD, las validaciones, el descuento y la devolución de unidades y la regla de no eliminar herramientas con préstamos. En local usan SQLite en memoria; en GitHub Actions (`.github/workflows/tests.yml`) se ejecutan contra un servicio de **MySQL 8** en cada push y pull request a `main` y `develop`.
+
+## Estructura principal
+
+```
+app/Http/Controllers/HerramientaController.php
+app/Http/Controllers/PrestamoController.php   # incluye el control de inventario
+app/Http/Requests/HerramientaRequest.php      # reglas de validación
+app/Http/Requests/PrestamoRequest.php
+app/Models/Herramienta.php                    # hasMany prestamos
+app/Models/Prestamo.php                       # belongsTo herramienta
+database/migrations/                          # tablas herramientas y prestamos
+database/seeders/DatabaseSeeder.php           # datos de prueba
+resources/views/layouts/                      # plantilla Bootstrap, menú y alertas
+resources/views/herramientas/                 # vistas del CRUD de herramientas
+resources/views/prestamos/                    # vistas del CRUD de préstamos
+routes/web.php                                # Route::resource de ambos módulos
+tests/Feature/                                # pruebas automatizadas
+```
+
+## Flujo de trabajo con Git
+
+- `main`: versión estable.
+- `develop`: integración de los avances.
+- Los cambios se hacen en `develop` (o en ramas `feature/...`) y se integran a `main` mediante Pull Requests.
+- El archivo `.env`, las contraseñas y la carpeta `vendor` no se suben al repositorio (ver `.gitignore`).
